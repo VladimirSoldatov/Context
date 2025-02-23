@@ -12,8 +12,25 @@ namespace Context
         static void Main(string[] args)
         {
 
-            Init();
+            //Init();
+            GetAuthorsA();
 
+        }
+
+        static void GetAllBooks2()
+        {
+            using (LibriaryEntity db = new LibriaryEntity())
+            {
+                var au = db.Book.OrderBy((x) =>
+                x.Title).ToList();
+                foreach (var a in au)
+                {
+                    Console.WriteLine("Book: " + a.Title +
+                    " price: " + a.Price + " author: "
+                    + a.Author.FirstName + " " + a.
+                    Author.LastName);
+                }
+            }
         }
         static void AddPublisher(Publisher publisher)
         {
@@ -60,6 +77,26 @@ namespace Context
                     Console.WriteLine($"{author.FirstName} {author.LastName} не добавлен");
             }
         }
+
+        static void GetAuthorsA()
+        {
+            using (LibriaryEntity db = new LibriaryEntity())
+            {
+                db.Configuration.LazyLoadingEnabled = false;
+                var book = (from b in db.Book
+                            where (b.Title.
+                StartsWith("w"))
+                            select b).
+                FirstOrDefault<Book>();
+               
+            db.Entry(book).Reference(a => a.Author).Load();
+                Console.WriteLine("Книга: " + book.Title +
+                " цена: " + book.Price + " автор: " + book.
+                Author.FirstName + " " + book.Author.
+                LastName);
+            }
+        }
+
         static void Init()
         {
             Author author = new Author
@@ -159,6 +196,18 @@ namespace Context
                 myAuthor = db.Author.Where(p=>p.FirstName == first_name).OrderByDescending(p=>p.Id).FirstOrDefault();
             }
                 return myAuthor;
+        }
+        static void GetAllBooks()
+        {
+            using (LibriaryEntity db = new LibriaryEntity())
+            {
+                var books = (from s in db.Book.Include("Author")
+                             select s).ToList<Book>();
+                foreach (var a in books)
+                {
+                    Console.WriteLine($"Книга: { a.Title} {a.Author.FirstName}  {a.Author.LastName}");
+                }
+            }
         }
         static List<Author> GetAuthorsByName(string first_name)
         {
